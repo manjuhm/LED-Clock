@@ -1,0 +1,95 @@
+
+#include <FastLED.h>
+#include <Wire.h>
+#include "RTClib.h"
+#define NUM_LEDS 30
+#define DATA_PIN 6
+#define wait_time 10
+CRGB LEDs[NUM_LEDS];
+// Convert ten CHSV rainbow values to ten CRGB values;
+ // CHSV hsvs[10];
+ // CRGB leds[10];
+  // (set hsv values here)
+//  hsv2rgb_rainbow( hsvs, leds, 10); // convert all
+//char* c="colour1";
+CRGB color = CRGB::Pink;
+//CRGB color = colour();
+CRGB color1 = CRGB::Red;
+
+//int fill_rainbow( &(leds[i]), 1 /*led count*/, 222 /*starting hue*/);
+RTC_DS3231 rtc;
+uint8_t hue = 0;
+void setup () {
+
+FastLED.delay(3000);
+  FastLED.addLeds<WS2812B, DATA_PIN, GRB>(LEDs, NUM_LEDS);
+
+  Serial.begin(9600);
+  while (!Serial) {
+     }
+
+  if (!rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    while (1);
+  }
+
+  if (rtc.lostPower()) {
+    Serial.println("RTC lost power, lets set the time!");
+    // below line sets the RTC with provided date & time (April 26, 2020 at 12:30).
+       //rtc.adjust(DateTime(2020, 4, 26, 5, 12, 0));
+      }
+//   rtc.adjust(DateTime(2020, 5, 14, 12, 30, 0));
+}
+
+void loop () {
+
+  DateTime now = rtc.now();
+
+  int hl = now.hour() / 10;
+  int hr = now.hour() % 10;
+  int ml = now.minute() / 10;
+  int mr = now.minute() % 10;
+
+  displayTime(0, mr);
+  displayTime(7, ml);
+  displayTime(16, hr);
+  displayTime(23, hl);
+
+
+  FastLED.show();
+ 
+//  delay(1000 * 29);
+  
+  LEDs[14] = color1;
+  LEDs[15] = color1;
+  FastLED.show();
+  delay(1000);
+  LEDs[14] = CRGB::Black;
+    LEDs[15] = CRGB::Black;
+  FastLED.show();
+  delay(1000);
+  
+      }
+
+void displayTime(int startindex, int number) {
+
+  byte numbers[] = {
+    0b00111111, // 0
+    0b00000110, // 1
+    0b01011011, // 2
+    0b01001111, // 3
+    0b01100110, // 4
+    0b01101101, // 5
+    0b01111101, // 6
+    0b00000111, // 7
+    0b01111111, // 8
+    0b01101111, // 9
+  };
+
+  for (int i = 0; i < 7; i++) {
+    LEDs[i + startindex] = ((numbers[number] & 1 << i) == 1 << i) ? color : CRGB::Black;
+
+    }
+}
+
+
